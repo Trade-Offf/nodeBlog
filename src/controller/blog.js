@@ -22,7 +22,7 @@ const getDetail = (id) => {
   // 先返回假数据（格式正确的）
   return [
     {
-      id: 1,
+      id: id,
       titile: "标题一",
       contentL: "内容A",
       createTime: 1628048767147,
@@ -33,5 +33,5 @@ const getDetail = (id) => {
 
 module.exports = {
   getList,
-  getDetail
+  getDetail,
 };
