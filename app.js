@@ -2,6 +2,7 @@ const querystring = require("querystring");
 const handleBlogRouter = require("./src/router/blog");
 const handleUserRouter = require("./src/router/user");
 
+// 获取POST传参
 const getPostData = (req) => {
   const promise = new Promise((resolve, reject) => {
     if (req.method !== "POST") {
@@ -28,14 +29,13 @@ const getPostData = (req) => {
 };
 
 const serverHandle = (req, res) => {
-  // 设置返回格式 JSON
+  // 设置返回的数据格式 JSON
   res.setHeader("Content-type", "application/json");
 
-  // 获取path
   const url = req.url;
+  // 解析url，获取path
   req.path = url.split("?")[0];
-
-  // 解析query
+  // 解析url，获取参数
   req.query = querystring.parse(url.split("?")[1]);
 
   // 处理post data
