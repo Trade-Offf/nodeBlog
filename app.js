@@ -33,10 +33,24 @@ const serverHandle = (req, res) => {
   res.setHeader("Content-type", "application/json");
 
   const url = req.url;
+
   // 解析url，获取path
   req.path = url.split("?")[0];
   // 解析url，获取参数
   req.query = querystring.parse(url.split("?")[1]);
+
+  // 解析cookie
+  req.cookie = {};
+  const cookieStr = req.headers.cookie || "";
+  cookieStr.split(";").forEach((item) => {
+    if (!item) {
+      return;
+    }
+    const arr = item.split("=");
+    const key = arr[0].trim();
+    const value = arr[1].trim();
+    req.cookie[key] = value;
+  });
 
   // 处理post data
   getPostData(req).then((postData) => {
@@ -52,9 +66,11 @@ const serverHandle = (req, res) => {
     }
 
     // 处理 user 路由
-    const userData = handleUserRouter(req, res);
-    if (userData) {
-      res.end(JSON.stringify(userData));
+    const userResult = handleUserRouter(req, res);
+    if (userResult) {
+      userResult.then((userData) => {
+        res.end(JSON.stringify(userData));
+      });
       return;
     }
 
