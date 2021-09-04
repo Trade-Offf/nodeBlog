@@ -2,7 +2,10 @@ const querystring = require("querystring");
 const handleBlogRouter = require("./src/router/blog");
 const handleUserRouter = require("./src/router/user");
 
-// 获取POST传参
+// session 数据
+const SESSION_DATA = {};
+
+// 获取处理POST传参
 const getPostData = (req) => {
   const promise = new Promise((resolve, reject) => {
     if (req.method !== "POST") {
@@ -52,6 +55,21 @@ const serverHandle = (req, res) => {
     req.cookie[key] = value;
   });
 
+  // 解析 session
+  let needSetCookie = false;
+  let userId = req.cookie.userId;
+
+  if (userId) {
+    if (!SESSION_DATA[userId]) {
+      SESSION_DATA[userId] = {};
+    }
+  } else {
+    needSetCookie = true;
+    userId = `${Date.now()}`;
+    SESSION_DATA[userId] = {};
+  }
+  req.session = SESSION_DATA[userId];
+
   // 处理post data
   getPostData(req).then((postData) => {
     req.body = postData;
@@ -60,6 +78,9 @@ const serverHandle = (req, res) => {
     const blogResult = handleBlogRouter(req, res);
     if (blogResult) {
       blogResult.then((blogData) => {
+        if (needSetCookie) {
+          res.setHeader("Set-Cookie", `userId=${userId}; path=/; httpOnly;`);
+        }
         res.end(JSON.stringify(blogData));
       });
       return;
@@ -69,6 +90,9 @@ const serverHandle = (req, res) => {
     const userResult = handleUserRouter(req, res);
     if (userResult) {
       userResult.then((userData) => {
+        if (needSetCookie) {
+          res.setHeader("Set-Cookie", `userId=${userId}; path=/; httpOnly;`);
+        }
         res.end(JSON.stringify(userData));
       });
       return;
